@@ -1,7 +1,7 @@
 # RAM size
 megs: 32
 # Change to your Bochs installation path
-romimage: file=/usr/share/bochs/BIOS-bochs-latest
+romimage: file=/usr/share/bochs/BIOS-bochs-legacy
 vgaromimage: file=/usr/share/bochs/VGABIOS-lgpl-latest
 
 # Disk
@@ -13,5 +13,6 @@ log: bochsout.txt
 
 mouse: enabled=0
 keyboard: keymap=/usr/share/bochs/keymaps/x11-pc-us.map
+sound: driver=dummy
 clock: sync=realtime
 cpu: ips=1000000
