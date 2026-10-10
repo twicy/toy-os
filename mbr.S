@@ -15,12 +15,12 @@ SECTION MBR vstart=0x7c00
     mov dx,184fh
     int 10h
 
-    mov byte [gs:0x00],'1'
+    mov byte [gs:0x00],'M'
     mov byte [gs:0x01],0xA4
 
     mov eax,LOADER_START_SECTOR
     mov bx,LOADER_BASE_ADDR
-    mov cx,1
+    mov cx,4
     call read_disk
     jmp LOADER_BASE_ADDR
 
