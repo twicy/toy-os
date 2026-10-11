@@ -86,3 +86,58 @@ SELECTOR_DATA equ (2 << SELECTOR_DESC_IDX_OFFSET) + \
 SELECTOR_VIDEO equ (3 << SELECTOR_DESC_IDX_OFFSET) + \
                   (0b << SELECTOR_TI_OFFSET) + \
                   (00b << SELECTOR_RPL_OFFSET)
+
+; Paging
+PAGE_OFFSET equ 12
+PAGE_DIR_BASE equ 0x100000
+PAGE_TABLE_0_BASE equ 0x101000
+PAGE_0_BASE equ 0x0
+
+PDE_ADDR_31_12_OFFSET equ 12
+PDE_AVL_OFFSET equ 8
+PDE_G_OFFSET equ 8
+PDE_ZERO_OFFSET equ 7
+PDE_D_OFFSET equ 6
+PDE_A_OFFSET equ 5
+PDE_PCD_OFFSET equ 4
+PDE_PWT_OFFSET equ 3
+PDE_US_OFFSET equ 2
+PDE_RW_OFFSET equ 1
+PDE_P_OFFSET equ 0
+
+PTE_ADDR_31_12_OFFSET equ 12
+PTE_AVL_OFFSET equ 9
+PTE_G_OFFSET equ 8
+PTE_PAT_OFFSET equ 7
+PTE_D_OFFSET equ 6
+PTE_A_OFFSET equ 5
+PTE_PCD_OFFSET equ 4
+PTE_PWT_OFFSET equ 3
+PTE_US_OFFSET equ 2
+PTE_RW_OFFSET equ 1
+PTE_P_OFFSET equ 0
+
+PDE_FLAGS equ (0 << PDE_AVL_OFFSET) + \
+              (0 << PDE_G_OFFSET) + \
+              (0 << PDE_ZERO_OFFSET) + \
+              (0 << PDE_D_OFFSET) + \
+              (0 << PDE_A_OFFSET) + \
+              (0 << PDE_PCD_OFFSET) + \
+              (0 << PDE_PWT_OFFSET) + \
+              (1 << PDE_US_OFFSET) + \
+              (1 << PDE_RW_OFFSET) + \
+              (1 << PDE_P_OFFSET)
+
+PTE_FLAGS equ (0 << PTE_AVL_OFFSET) + \
+              (0 << PTE_G_OFFSET) + \
+              (0 << PTE_PAT_OFFSET) + \
+              (0 << PTE_D_OFFSET) + \
+              (0 << PTE_A_OFFSET) + \
+              (0 << PTE_PCD_OFFSET) + \
+              (0 << PTE_PWT_OFFSET) + \
+              (1 << PTE_US_OFFSET) + \
+              (1 << PTE_RW_OFFSET) + \
+              (1 << PTE_P_OFFSET)
+
+PDE_0 equ PAGE_TABLE_0_BASE + PDE_FLAGS
+PTE_0 equ PAGE_0_BASE + PTE_FLAGS

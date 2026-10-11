@@ -16,3 +16,5 @@ keyboard: keymap=/usr/share/bochs/keymaps/x11-pc-us.map
 sound: driver=dummy
 clock: sync=realtime
 cpu: ips=1000000
+
+magic_break: enabled=1
