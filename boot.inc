@@ -1,6 +1,16 @@
 LOADER_BASE_ADDR equ 0x900
 LOADER_START_SECTOR equ 0x2
 
+; KERNEL_START_SECTOR and KERNEL_SECTOR_COUNT must match seek and count in the Makefile
+KERNEL_START_SECTOR equ 0x9
+KERNEL_SECTOR_COUNT equ 200
+; kernel.bin (ELF file) is read here first, 200 sectors end at 0x89000
+KERNEL_BIN_BASE_ADDR equ 0x70000
+; must match -Ttext in the Makefile
+KERNEL_ENTRY_POINT equ 0xc0001500
+; top of free low memory, below the EBDA at 0x9fc00
+KERNEL_STACK_TOP equ 0xc009f000
+
 ; Segment Descriptor
 ; Higher 32 bits
 DESC_BASE_31_24_OFFSET equ 24
@@ -141,3 +151,7 @@ PTE_FLAGS equ (0 << PTE_AVL_OFFSET) + \
 
 PDE_0 equ PAGE_TABLE_0_BASE + PDE_FLAGS
 PTE_0 equ PAGE_0_BASE + PTE_FLAGS
+
+; ELF
+PT_NULL equ 0
+PT_LOAD equ 1

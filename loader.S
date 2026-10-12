@@ -63,6 +63,12 @@ prot_mode_entry:
     mov byte [gs:160], 'P'
     mov byte [gs:161], 0xA4
 
+    ; load kernel.bin into a buffer, it is an ELF file so its code is not at offset 0
+    mov eax, KERNEL_START_SECTOR
+    mov ebx, KERNEL_BIN_BASE_ADDR
+    mov ecx, KERNEL_SECTOR_COUNT
+    call read_disk
+
 setup_gpt:
     xor eax, eax
 PURGE_LEN equ (1024 * 4 + 1024 * 1024 * 4)
@@ -139,5 +145,115 @@ PURGE_LEN equ (1024 * 4 + 1024 * 1024 * 4)
     mov byte [0xC00B8000 + 164], 'K'
     mov byte [0xC00B8000 + 165], 0xA5
 
-    jmp $
-    
+kernel_init:
+    xor eax, eax
+    xor ebx, ebx
+    xor ecx, ecx
+    xor edx, edx
+
+    ; e_phentsize, namely program header size
+    mov dx, [KERNEL_BIN_BASE_ADDR + 42]
+    ; e_phoff, offset of the first program header
+    mov ebx, [KERNEL_BIN_BASE_ADDR + 28]
+    ; e_phnum, number of program header
+    mov cx, [KERNEL_BIN_BASE_ADDR + 44]
+
+    add ebx, KERNEL_BIN_BASE_ADDR
+
+.each_segment:
+    ; p_type is a dword, only PT_LOAD segments get copied into memory
+    cmp dword [ebx], PT_LOAD
+    jne .next_segment
+
+    ; memcpy from bin to the designated place
+    ; p_filesz
+    push dword [ebx + 16]
+    ; p_offset
+    mov eax, [ebx + 4]
+    add eax, KERNEL_BIN_BASE_ADDR
+    push eax
+    ; p_vaddr
+    push dword [ebx + 8]
+    call mem_cpy
+    add esp, 12
+
+.next_segment:
+    add ebx, edx
+    loop .each_segment
+
+    mov esp, KERNEL_STACK_TOP
+    jmp KERNEL_ENTRY_POINT
+
+; Read sectors from the primary ATA disk (LBA28, PIO), 32-bit version of the MBR's read_disk
+; eax = start LBA, ebx = destination address, ecx = sector count (1-255)
+; clobbers eax, ebx, ecx, edx, esi, edi
+read_disk:
+    mov esi, eax
+    mov edi, ecx
+
+    mov dx, 0x1f2
+    mov al, cl
+    out dx, al
+
+    mov eax, esi
+
+    mov dx, 0x1f3
+    out dx, al
+
+    mov cl, 8
+    shr eax, cl
+    mov dx, 0x1f4
+    out dx, al
+
+    shr eax, cl
+    mov dx, 0x1f5
+    out dx, al
+
+    shr eax, cl
+    and al, 0x0f
+    or al, 0xe0
+    mov dx, 0x1f6
+    out dx, al
+
+    mov dx, 0x1f7
+    mov al, 0x20
+    out dx, al
+
+    ; the drive sets DRQ once per sector, so wait again before each one
+.next_sector:
+    mov dx, 0x1f7
+.not_ready:
+    nop
+    in al, dx
+    and al, 0x88
+    cmp al, 0x08
+    jnz .not_ready
+
+    ; 512 bytes = 256 words
+    mov ecx, 256
+    mov dx, 0x1f0
+.go_on_read:
+    in ax, dx
+    mov [ebx], ax
+    add ebx, 2
+    loop .go_on_read
+
+    dec edi
+    jnz .next_sector
+    ret
+
+; dst, src, size
+mem_cpy:
+    push ebp
+    mov ebp, esp
+    push ecx
+    mov edi, [ebp + 8]
+    mov esi, [ebp + 12]
+    mov ecx, [ebp + 16]
+    ; movsb only copies forward when the direction flag is clear
+    cld
+    rep movsb
+
+    pop ecx
+    pop ebp
+    ret
