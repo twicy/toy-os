@@ -6,8 +6,6 @@ KERNEL_START_SECTOR equ 0x9
 KERNEL_SECTOR_COUNT equ 200
 ; kernel.bin (ELF file) is read here first, 200 sectors end at 0x89000
 KERNEL_BIN_BASE_ADDR equ 0x70000
-; must match -Ttext in the Makefile
-KERNEL_ENTRY_POINT equ 0xc0001500
 ; top of free low memory, below the EBDA at 0x9fc00
 KERNEL_STACK_TOP equ 0xc009f000
 

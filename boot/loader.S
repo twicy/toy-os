@@ -177,12 +177,27 @@ kernel_init:
     call mem_cpy
     add esp, 12
 
+    ; .bss takes memory but no file bytes (p_memsz > p_filesz), zero
+    ; the tail so C globals start at 0
+    ; p_memsz - p_filesz
+    mov eax, [ebx + 20]
+    sub eax, [ebx + 16]
+    push eax
+    ; p_vaddr + p_filesz
+    mov eax, [ebx + 8]
+    add eax, [ebx + 16]
+    push eax
+    call mem_zero
+    add esp, 8
+
 .next_segment:
     add ebx, edx
     loop .each_segment
 
     mov esp, KERNEL_STACK_TOP
-    jmp KERNEL_ENTRY_POINT
+    ; e_entry, the address ld -e put in the ELF header, so the kernel
+    ; may start anywhere in .text, the buffer is still mapped here
+    jmp [KERNEL_BIN_BASE_ADDR + 24]
 
 ; Read sectors from the primary ATA disk (LBA28, PIO), 32-bit version of the MBR's read_disk
 ; eax = start LBA, ebx = destination address, ecx = sector count (1-255)
@@ -253,6 +268,23 @@ mem_cpy:
     ; movsb only copies forward when the direction flag is clear
     cld
     rep movsb
+
+    pop ecx
+    pop ebp
+    ret
+
+; dst, size
+; clobbers eax, edi
+mem_zero:
+    push ebp
+    mov ebp, esp
+    push ecx
+    mov edi, [ebp + 8]
+    mov ecx, [ebp + 12]
+    xor eax, eax
+    ; stosb stores al and only moves forward when the direction flag is clear
+    cld
+    rep stosb
 
     pop ecx
     pop ebp
