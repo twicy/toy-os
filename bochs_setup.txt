@@ -11,8 +11,15 @@ ata0-master: type=disk, path="toy-os.img", mode=flat, cylinders=20, heads=16, sp
 
 log: bochsout.txt
 
+# Serve the screen over VNC on port 5900 instead of an X11 window, which
+# Bochs cannot scale. make run opens Remmina on it, make run-x11 overrides
+# this with the X11 window.
+display_library: rfb
+
 mouse: enabled=0
-keyboard: keymap=/usr/share/bochs/keymaps/x11-pc-us.map
+# No keymap: the built-in mapping is US, and the rfb display panics on the
+# X11 keymaps (unknown host key names such as XK_Mode_switch). make run-x11
+# adds x11-pc-us.map back.
 sound: driver=dummy
 clock: sync=realtime
 cpu: ips=1000000

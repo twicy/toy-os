@@ -1,0 +1,13 @@
+[remmina]
+name=toy-os
+protocol=VNC
+# Bochs takes 5900 when it is free, make run checks that it is
+server=127.0.0.1:5900
+# the Bochs VNC server only accepts 8-bit color (BGR233)
+colordepth=8
+# scaled mode: the Bochs screen stretches to the window, which starts at
+# about 1.6x the 720x530 Bochs screen plus Remmina's toolbar
+scale=1
+viewmode=1
+window_width=1152
+window_height=896
