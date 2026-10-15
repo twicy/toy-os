@@ -2,7 +2,8 @@ IMG := toy-os.img
 BUILD := build
 
 KERNEL_SRCS := main.c $(wildcard src/*.c lib/*.c)
-KERNEL_OBJS := $(KERNEL_SRCS:%.c=$(BUILD)/%.o)
+KERNEL_ASMS := $(wildcard src/*.S)
+KERNEL_OBJS := $(KERNEL_SRCS:%.c=$(BUILD)/%.o) $(KERNEL_ASMS:%.S=$(BUILD)/%.o)
 
 .PHONY: all check-image run run-x11 clean
 
@@ -21,6 +22,10 @@ CFLAGS := -m32 -ffreestanding -nostdinc -Iinclude \
 $(BUILD)/%.o: %.c
 	@mkdir -p $(dir $@)
 	gcc $(CFLAGS) -c -o $@ $<
+
+$(BUILD)/%.o: %.S
+	@mkdir -p $(dir $@)
+	nasm -f elf32 -o $@ $<
 
 kernel.bin: $(KERNEL_OBJS)
 	ld -m elf_i386 $^ -Ttext 0xc0001500 -e main -o $@
