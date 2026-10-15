@@ -1,10 +1,35 @@
 #include <idt.h>
+#include <pic.h>
 #include <printk.h>
 
 static idt_entry_t idt[IDT_SIZE];
 
 extern uint32_t intr_stubs[IDT_SIZE];
 static intr_handler_t intr_handlers[IDT_SIZE];
+
+static const char *const exception_names[32] = {
+    [0] = "divide error",
+    [1] = "debug",
+    [2] = "NMI",
+    [3] = "breakpoint",
+    [4] = "overflow",
+    [5] = "bound range exceeded",
+    [6] = "invalid opcode",
+    [7] = "device not available",
+    [8] = "double fault",
+    [9] = "coprocessor segment overrun",
+    [10] = "invalid TSS",
+    [11] = "segment not present",
+    [12] = "stack-segment fault",
+    [13] = "general protection",
+    [14] = "page fault",
+    [16] = "x87 floating-point",
+    [17] = "alignment check",
+    [18] = "machine check",
+    [19] = "SIMD floating-point",
+    [20] = "virtualization",
+    [21] = "control protection",
+};
 
 void init_idt(void) {
     for (int i = 0; i < IDT_SIZE; i++) {
@@ -26,12 +51,26 @@ void register_handler(uint8_t vec, intr_handler_t handler) {
 }
 
 static void unhandled_intr(struct intr_frame *f) {
-    printk("unhandled vector %u, err %#x, eip %#x\n", f->vector, f->err_code, f->eip);
+    if (f->vector < 32) {
+        const char *name = exception_names[f->vector];
+        printk("exception %u (%s), err %#x, eip %#x\n",
+               f->vector, name ? name : "reserved", f->err_code, f->eip);
+    } else {
+        printk("unhandled vector %u, eip %#x\n", f->vector, f->eip);
+    }
+
     for (;;)
         asm volatile ("hlt");
 }
 
 void intr_dispatch(struct intr_frame *f) {
+    /* Fall thru APIC vector range */
+    if (f->vector >= PIC_IRQ_BASE && f->vector < PIC_IRQ_BASE + PIC_IRQ_COUNT) {
+        if (!pic_ack(f->vector - PIC_IRQ_BASE)) {
+            return;
+        }
+    }
+
     if (intr_handlers[f->vector]) {
         intr_handlers[f->vector](f);
     } else {
