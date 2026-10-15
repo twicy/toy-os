@@ -3,6 +3,7 @@
 #include <idt.h>
 #include <pic.h>
 #include <timer.h>
+#include <debug.h>
 
 static void on_breakpoint(struct intr_frame *f) {
     printk("int3 at eip %#x\n", f->eip);
@@ -19,6 +20,7 @@ int main(void) {
     init_timer();
     /* IF has been 0 since the loader's cli, IRQs only arrive from here on */
     asm volatile ("sti");
+    ASSERT(1 == 2);
     for (;;) {
         /* sleep until the next interrupt instead of spinning */
         asm volatile ("hlt");
