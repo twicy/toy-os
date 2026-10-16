@@ -1,15 +1,23 @@
-LOADER_BASE_ADDR equ 0x900
+LOADER_BASE_ADDR equ 0x800
 LOADER_START_SECTOR equ 0x2
+
+; BIOS E820 memory map, filled by the loader in real mode for the kernel
+; dword entry count, then entries: qword base, qword length, dword type
+; 32 entries end at 0x784, below the loader at LOADER_BASE_ADDR
+MEM_MAP_ADDR equ 0x500
+MEM_MAP_COUNT_ADDR equ MEM_MAP_ADDR
+MEM_MAP_ENTRIES_ADDR equ (MEM_MAP_ADDR + 4)
+MEM_MAP_ENTRY_SIZE equ 20
+MEM_MAP_MAX_ENTRIES equ 32
 
 ; KERNEL_START_SECTOR and KERNEL_SECTOR_COUNT must match seek and count in the Makefile
 KERNEL_START_SECTOR equ 0x9
 KERNEL_SECTOR_COUNT equ 200
-; kernel.bin (ELF file) is read here first, 200 sectors end at 0x89000
 KERNEL_BIN_BASE_ADDR equ 0x70000
-; top of free low memory, below the EBDA at 0x9fc00
 KERNEL_STACK_TOP equ 0xc009f000
+LOADER_STACK_TOP equ 0x9f000
 
-; Segment Descriptor
+; -------- Segment Descriptor --------
 ; Higher 32 bits
 DESC_BASE_31_24_OFFSET equ 24
 DESC_G_OFFSET equ 23
@@ -27,7 +35,7 @@ DESC_BASE_23_16_OFFSET equ 0
 DESC_BASE_15_0_OFFSET equ 16
 DESC_LIMIT_15_0_OFFSET equ 0
 
-; Code segment
+; -------- Code segment --------
 ; Base: 0, Limit: 0xFFFFF * 4K = 4G
 ; Type: x=1,c=0,r=1,a=0
 DESC_CODE_HIGH_32 equ (0 << DESC_BASE_31_24_OFFSET) + \
@@ -45,7 +53,7 @@ DESC_CODE_HIGH_32 equ (0 << DESC_BASE_31_24_OFFSET) + \
 DESC_CODE_LOW_32 equ (0 << DESC_BASE_15_0_OFFSET) + \
                      (0xFFFF << DESC_LIMIT_15_0_OFFSET)
 
-; Data segment
+; -------- Data segment --------
 ; Base: 0, Limit: 0xFFFFF * 4K = 4G
 ; Type: x=0,e=0,w=1,a=0
 DESC_DATA_HIGH_32 equ (0 << DESC_BASE_31_24_OFFSET) + \
@@ -63,7 +71,7 @@ DESC_DATA_HIGH_32 equ (0 << DESC_BASE_31_24_OFFSET) + \
 DESC_DATA_LOW_32 equ (0 << DESC_BASE_15_0_OFFSET) + \
                      (0xFFFF << DESC_LIMIT_15_0_OFFSET)
 
-; Video segment
+; -------- Video segment --------
 ; Base: 0xB8000, Limit: 8 * 4K = 32K
 DESC_VIDEO_HIGH_32 equ (0 << DESC_BASE_31_24_OFFSET) + \
                       (1 << DESC_G_OFFSET) + \
@@ -80,7 +88,7 @@ DESC_VIDEO_HIGH_32 equ (0 << DESC_BASE_31_24_OFFSET) + \
 DESC_VIDEO_LOW_32 equ (0x8000 << DESC_BASE_15_0_OFFSET) + \
                      (0x0007 << DESC_LIMIT_15_0_OFFSET)
 
-; Segment selector
+; -------- Segment selector --------
 SELECTOR_DESC_IDX_OFFSET equ 3
 SELECTOR_TI_OFFSET equ 2
 SELECTOR_RPL_OFFSET equ 0
@@ -95,7 +103,7 @@ SELECTOR_VIDEO equ (3 << SELECTOR_DESC_IDX_OFFSET) + \
                   (0b << SELECTOR_TI_OFFSET) + \
                   (00b << SELECTOR_RPL_OFFSET)
 
-; Paging
+; -------- Paging --------
 PAGE_OFFSET equ 12
 PAGE_DIR_BASE equ 0x100000
 PAGE_TABLE_0_BASE equ 0x101000

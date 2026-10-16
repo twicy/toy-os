@@ -12,7 +12,7 @@ all: mbr.bin loader.bin kernel.bin
 	dd if=./loader.bin of=./$(IMG) bs=512 count=4 seek=2 conv=notrunc
 	dd if=./kernel.bin of=./$(IMG) bs=512 count=200 seek=9 conv=notrunc
 
-%.bin: boot/%.S boot/boot.inc
+%.bin: boot/%.S boot/boot.inc boot/util.inc
 	nasm -f bin -i boot/ -o $@ $<
 
 CFLAGS := -m32 -ffreestanding -nostdinc -Iinclude \
