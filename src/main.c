@@ -15,7 +15,8 @@ int main(void) {
     init_gdt();
     clear_screen();
     printk("toy-os kernel entered at %p\n", (void *)main);
-    print_memory_map();
+    probe_phys_mem();
+    dump_phys_mem();
     init_idt();
     init_pic();
     register_handler(3, on_breakpoint);

@@ -1,5 +1,5 @@
 # RAM size
-megs: 32
+megs: 512
 # Change to your Bochs installation path
 romimage: file=/usr/share/bochs/BIOS-bochs-legacy
 vgaromimage: file=/usr/share/bochs/VGABIOS-lgpl-latest
