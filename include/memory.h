@@ -53,9 +53,11 @@ struct phys_mem_block {
 /* number of page frames, one past the highest usable one */
 extern uint32_t max_pfn;
 
-void probe_phys_mem(void);
+void e820_probe_phys_mem(void);
 void dump_phys_mem(void);
 void phys_mem_reserve(uint32_t start, uint32_t end);
+/* give back [start, end) reserved earlier, a range that was not reserved is ignored */
+void phys_mem_free(uint32_t start, uint32_t end);
 uint32_t phys_mem_alloc(uint32_t size, uint32_t align);
 
 #endif

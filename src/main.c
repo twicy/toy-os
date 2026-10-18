@@ -6,6 +6,7 @@
 #include <debug.h>
 #include <memory.h>
 #include <gdt.h>
+#include <page.h>
 
 static void on_breakpoint(struct intr_frame *f) {
     printk("int3 at eip %#x\n", f->eip);
@@ -15,8 +16,13 @@ int main(void) {
     init_gdt();
     clear_screen();
     printk("toy-os kernel entered at %p\n", (void *)main);
-    probe_phys_mem();
-    dump_phys_mem();
+
+    /* GDT's memory is safely pre-allcoated in BSS section, under _end */
+    /* But kernel PG and PTs are phys_mem_alloc()ed already */
+    e820_probe_phys_mem();
+    init_pd();
+
+
     init_idt();
     init_pic();
     register_handler(3, on_breakpoint);
