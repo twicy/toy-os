@@ -162,6 +162,33 @@ void phys_mem_free(uint32_t start, uint32_t end) {
     block_list_remove(&ards_rsved, start, end);
 }
 
+void phys_mem_for_each_free(void (*fn)(uint32_t start, uint32_t end)) {
+    for (uint32_t i = 0; i < ards_mem.count; i++) {
+        uint32_t start = ards_mem.blocks[i].start;
+        uint32_t end = ards_mem.blocks[i].end;
+
+        // both lists are ascending, walk the reserved blocks across this usable block
+        for (uint32_t j = 0; j < ards_rsved.count && start < end; j++) {
+            struct phys_mem_block *r = &ards_rsved.blocks[j];
+            if (r->end <= start) {
+                continue;
+            }
+            if (r->start >= end) {
+                break;
+            }
+            // the gap before r
+            if (r->start > start) {
+                fn(start, r->start);
+            }
+            start = r->end;
+        }
+        // the tail after the last reserved block
+        if (start < end) {
+            fn(start, end);
+        }
+    }
+}
+
 uint32_t phys_mem_alloc(uint32_t size, uint32_t align) {
     if (size == 0 || !is_pow2(align)) {
         printk("%s requires size > 0 (getting %u) and align (getting %u) to be power of 2\n",

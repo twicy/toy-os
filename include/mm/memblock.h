@@ -50,5 +50,7 @@ void phys_mem_reserve(uint32_t start, uint32_t end);
 /* give back [start, end) reserved earlier, a range that was not reserved is ignored */
 void phys_mem_free(uint32_t start, uint32_t end);
 uint32_t phys_mem_alloc(uint32_t size, uint32_t align);
+/* call fn on each free range: usable minus reserved, byte exact and ascending */
+void phys_mem_for_each_free(void (*fn)(uint32_t start, uint32_t end));
 
 #endif
