@@ -1,7 +1,7 @@
 IMG := toy-os.img
 BUILD := build
 
-KERNEL_SRCS := $(wildcard src/*.c lib/*.c)
+KERNEL_SRCS := $(wildcard src/*.c src/mm/*.c lib/*.c)
 KERNEL_ASMS := $(wildcard src/*.S)
 KERNEL_OBJS := $(KERNEL_SRCS:%.c=$(BUILD)/%.o) $(KERNEL_ASMS:%.S=$(BUILD)/%.o)
 

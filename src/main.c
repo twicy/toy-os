@@ -4,9 +4,9 @@
 #include <pic.h>
 #include <timer.h>
 #include <debug.h>
-#include <memory.h>
+#include <mm/memblock.h>
 #include <gdt.h>
-#include <page.h>
+#include <mm/paging.h>
 
 static void on_breakpoint(struct intr_frame *f) {
     printk("int3 at eip %#x\n", f->eip);

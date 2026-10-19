@@ -1,4 +1,4 @@
-#include <memory.h>
+#include <mm/memblock.h>
 #include <printk.h>
 #include <debug.h>
 #include <math.h>

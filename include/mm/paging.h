@@ -1,7 +1,7 @@
-#ifndef PAGE_H
-#define PAGE_H
+#ifndef MM_PAGING_H
+#define MM_PAGING_H
 #include <stdint.h>
-#include <memory.h>
+#include <kernel.h>
 
 #define PD_ENTRIES 1024
 #define PT_ENTRIES 1024

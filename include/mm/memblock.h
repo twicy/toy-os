@@ -1,5 +1,5 @@
-#ifndef MEMORY_H
-#define MEMORY_H
+#ifndef MM_MEMBLOCK_H
+#define MM_MEMBLOCK_H
 #include <kernel.h>
 #include <stdint.h>
 
@@ -19,15 +19,6 @@ struct addr_range_desc {
     uint32_t length_high;
     uint32_t type;
 };
-
-
-#define PAGE_SHIFT 12
-#define PAGE_SIZE (1 << PAGE_SHIFT)
-#define phys_to_virt(x) ((void *)((uintptr_t)(x) + KERNEL_OFFSET))
-#define virt_to_phys(x) ((uintptr_t)(x) - KERNEL_OFFSET)
-
-#define PFN_UP(a)   (((a) + PAGE_SIZE - 1) >> PAGE_SHIFT)
-#define PFN_DOWN(a) ((a) >> PAGE_SHIFT)
 
 /* end of the kernel image (.bss included), defined by ld */
 extern char _end[];

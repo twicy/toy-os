@@ -1,4 +1,5 @@
-#include <page.h>
+#include <mm/paging.h>
+#include <mm/memblock.h>
 #include <debug.h>
 #include <stddef.h>
 #include <string.h>
