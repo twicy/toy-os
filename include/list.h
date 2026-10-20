@@ -33,6 +33,11 @@ static inline int list_empty(const struct list_head *head) {
     return head->next == head;
 }
 
+/* exactly one entry */
+static inline int list_is_singular(const struct list_head *head) {
+    return !list_empty(head) && head->next == head->prev;
+}
+
 static inline void __list_add(struct list_head *entry, struct list_head *prev,
                               struct list_head *next) {
     next->prev = entry;

@@ -74,7 +74,8 @@ void free_pages(struct page *page, uint32_t order) {
 
     ASSERT(order <= MAX_ORDER);
     ASSERT(pfn < max_pfn && IS_ALIGNED(pfn, 1u << order));
-    ASSERT(!(page->flags & (PG_reserved | PG_buddy)));
+    /* a slab page goes back through free_slab, which clears PG_slab first */
+    ASSERT(!(page->flags & (PG_reserved | PG_buddy | PG_slab)));
     ASSERT(page->refcount == 1);
 
     page->refcount = 0;

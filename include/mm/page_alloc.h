@@ -7,12 +7,21 @@
 #define PG_reserved (1u << 0)
 /* Set if it is the first page of a free block in buddy system */
 #define PG_buddy (1u << 1)
+/* Set on every page that is a slab, the slab fields below are valid */
+#define PG_slab (1u << 2)
+
+struct kmem_cache;
 
 struct page {
     uint16_t flags;
     uint16_t order;
     int32_t refcount;
+    /* buddy: the free list of its order, slab: the partial list of its cache */
     struct list_head lru;
+    /* PG_slab only, a slab is exactly one page so these describe the whole slab */
+    struct kmem_cache *slab_cache;
+    void *freelist;                 /* first free object, NULL when the slab is full */
+    uint32_t inuse;                 /* objects handed out, 0 is empty, cache->objects is full */
 };
 #define page_free(page) 
 
