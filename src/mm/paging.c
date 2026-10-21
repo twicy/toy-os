@@ -28,7 +28,7 @@ static void *early_alloc(uint32_t size) {
         uint32_t va = (uint32_t)phys_to_virt(phys + off);
         /* All PTs (arry of PTEs) are packed */
         LOADER_PTES[va >> PAGE_SHIFT] = mk_pte(phys + off, PG_KERNEL);
-        asm volatile ("invlpg (%0)" : : "r"(va) : "memory");
+        invlpg(va);
     }
     return phys_to_virt(phys);
 }
@@ -37,9 +37,9 @@ void init_pd(void) {
     uint32_t n_pts = DIV_ROUND_UP(max_pfn, PT_ENTRIES);
     uint32_t first_pde = PD_INDEX(KERNEL_OFFSET);
 
-    if (first_pde + n_pts > PD_ENTRIES) {
-        PANIC("%u MiB of RAM does not fit the kernel's 1 GiB of address space",
-            max_pfn >> (20 - PAGE_SHIFT));
+    /* memblock already clipped RAM at PHYS_ADDR_LIMIT, this only catches the two disagreeing */
+    if (first_pde + n_pts > PD_INDEX(VMALLOC_START)) {
+        PANIC("%u MiB of RAM runs into vmalloc space", max_pfn >> (20 - PAGE_SHIFT));
     }
 
     /* Create a new kernel page dir, not colliding with loader's */

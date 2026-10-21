@@ -51,6 +51,11 @@ typedef uint32_t pte_t;
 #define pte_phys(e) ((uint32_t)(e) & PG_FRAME_MASK)
 #define pde_phys(e) ((uint32_t)(e) & (((e) & PDE_PS) ? PDE_PS_FRAME_MASK : PG_FRAME_MASK))
 
+/* drop the TLB entry of one page, needed after changing or clearing a present PTE */
+static inline void invlpg(uint32_t va) {
+    asm volatile ("invlpg (%0)" : : "r"(va) : "memory");
+}
+
 extern pde_t *kernel_pd;
 extern pte_t *kernel_pts;
 

@@ -121,6 +121,8 @@ void e820_probe_phys_mem(void) {
         }
 
         if (end64 > PHYS_ADDR_LIMIT) {
+            printk("RAM above %u MiB is ignored, it does not fit the direct map\n",
+                PHYS_ADDR_LIMIT >> 20);
             end64 = PHYS_ADDR_LIMIT;
         }
 

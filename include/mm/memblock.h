@@ -29,8 +29,8 @@ struct phys_mem_block {
     uint32_t end;
 };
 
-/* highest page-aligned exclusive end a uint32_t can hold, 4 GiB itself does not fit */
-#define PHYS_ADDR_LIMIT 0xFFFFF000ULL
+/* RAM at and above this is ignored: the direct map stops where vmalloc starts, there is no highmem */
+#define PHYS_ADDR_LIMIT (VMALLOC_START - KERNEL_OFFSET)
 
 /* capacity of the usable and the reserved block lists */
 #define PHYS_MEM_MAX_BLOCKS 32
