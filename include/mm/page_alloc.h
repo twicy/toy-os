@@ -9,6 +9,8 @@
 #define PG_buddy (1u << 1)
 /* Set on every page that is a slab, the slab fields below are valid */
 #define PG_slab (1u << 2)
+/* Set on the first page of a kmalloc too large for a slab, order holds its size */
+#define PG_large (1u << 3)
 
 struct kmem_cache;
 
@@ -41,6 +43,13 @@ struct free_block {
 };
 
 #define MAX_ORDER 10
+
+/* smallest order whose block holds size bytes, size > 0 */
+static inline uint32_t get_order(uint32_t size) {
+    /* pages - 1, without the overflow PFN_UP has for size near 4 GiB */
+    uint32_t n = (size - 1) >> PAGE_SHIFT;
+    return n ? 32 - __builtin_clz(n) : 0;
+}
 
 /* Order = pow(2, order) number of pages */
 struct zone {

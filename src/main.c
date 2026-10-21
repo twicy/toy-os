@@ -8,6 +8,7 @@
 #include <gdt.h>
 #include <mm/paging.h>
 #include <mm/page_alloc.h>
+#include <mm/slab.h>
 
 static void on_breakpoint(struct intr_frame *f) {
     printk("int3 at eip %#x\n", f->eip);
@@ -24,6 +25,7 @@ int main(void) {
     init_pd();
     // Hand over physical pages to zone
     init_page_alloc();
+    init_kmalloc();
 
     init_idt();
     init_pic();
