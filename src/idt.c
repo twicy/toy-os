@@ -50,6 +50,14 @@ void register_handler(uint8_t vec, intr_handler_t handler) {
     intr_handlers[vec] = handler;
 }
 
+void set_task_gate(uint8_t vec, uint16_t tss_selector) {
+    idt[vec].offset_15_0 = 0;
+    idt[vec].segment_selector = tss_selector;
+    idt[vec].zero = 0;
+    idt[vec].type_attr = TASK_GATE_TYPE;
+    idt[vec].offset_31_16 = 0;
+}
+
 static void unhandled_intr(struct intr_frame *f) {
     if (f->vector < 32) {
         const char *name = exception_names[f->vector];

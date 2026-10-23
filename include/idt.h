@@ -23,6 +23,11 @@ struct interrupt_descriptor {
  */
 #define INTER_DESC_TYPE_DEFAULT 0x8E
 
+/* P = 1, DPL = 00b, Type = 0101b: a task gate. The offset is unused, the
+ * CPU switches to the task whose TSS the selector names instead of calling
+ * a handler on the current stack */
+#define TASK_GATE_TYPE 0x85
+
 struct intr_frame {
     uint32_t edi, esi, ebp, esp_dummy, ebx, edx, ecx, eax;
     uint32_t vector, err_code;
@@ -40,5 +45,6 @@ typedef void (*intr_handler_t)(struct intr_frame *f);
 
 void init_idt();
 void register_handler(uint8_t vec, intr_handler_t handler);
+void set_task_gate(uint8_t vec, uint16_t tss_selector);
 
 #endif

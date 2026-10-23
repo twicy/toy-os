@@ -11,6 +11,7 @@
 #include <mm/slab.h>
 #include <mm/vmalloc.h>
 #include <task.h>
+#include <tss.h>
 
 static void on_breakpoint(struct intr_frame *f) {
     printk("int3 at eip %#x\n", f->eip);
@@ -32,6 +33,8 @@ int main(void) {
     init_tasks();
 
     init_idt();
+    init_tss();
+    init_doublefault();
     init_pic();
     register_handler(3, on_breakpoint);
     asm volatile ("int $3");

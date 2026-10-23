@@ -8,11 +8,16 @@
 #define KERNEL_DATA_IDX 0x2
 #define USER_CODE_IDX 0x3
 #define USER_DATA_IDX 0x4
+/* the TSS every thread runs under, and the one the double fault task gate switches to */
+#define TSS_IDX 0x5
+#define DOUBLEFAULT_TSS_IDX 0x6
 
 #define KERNEL_CODE_SELECTOR (KERNEL_CODE_IDX << 3)
 #define KERNEL_DATA_SELECTOR (KERNEL_DATA_IDX << 3)
 #define USER_DATA_SELECTOR (USER_DATA_IDX << 3)
 #define USER_CODE_SELECTOR (USER_CODE_IDX << 3)
+#define TSS_SELECTOR (TSS_IDX << 3)
+#define DOUBLEFAULT_TSS_SELECTOR (DOUBLEFAULT_TSS_IDX << 3)
 
 #define MAX_GDT_ENTRIES 16
 
@@ -31,5 +36,7 @@ struct gdtr{
 } __attribute__((packed));
 
 void init_gdt(void);
+/* point GDT entry idx at a TSS of size bytes */
+void gdt_set_tss(uint32_t idx, void *tss, uint32_t size);
 
 #endif

@@ -35,6 +35,8 @@ void init_gdt(void) {
     gdt[USER_DATA_IDX].granularity = 0xCF; // 4K granularity, 32-bit
     gdt[USER_DATA_IDX].base_high = 0x00;
 
+    // TSS entries are filled by init_tss and init_doublefault, next to the TSS each one describes
+
     gdtr.limit = sizeof(gdt) - 1;
     gdtr.base = (uint32_t)&gdt;
 
@@ -52,4 +54,16 @@ void init_gdt(void) {
                  "mov %%ax, %%ss"
                  : : "m"(gdtr), "i"(KERNEL_CODE_SELECTOR), "i"(KERNEL_DATA_SELECTOR)
                  : "eax", "memory");
+}
+
+void gdt_set_tss(uint32_t idx, void *tss, uint32_t size) {
+    uint32_t base = (uint32_t)tss;
+    uint32_t limit = size - 1;
+
+    gdt[idx].limit_low = limit & 0xFFFF;
+    gdt[idx].base_low = base & 0xFFFF;
+    gdt[idx].base_middle = (base >> 16) & 0xFF;
+    gdt[idx].access = 0x89; // Present, Ring 0, 32-bit TSS, available (ltr or a task switch marks it busy)
+    gdt[idx].granularity = (limit >> 16) & 0x0F; // byte granularity
+    gdt[idx].base_high = base >> 24;
 }
