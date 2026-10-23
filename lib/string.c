@@ -59,6 +59,15 @@ size_t strlen(const char *s) {
     return (size_t)(p - s);
 }
 
+size_t strlcpy(char *dst, const char *src, size_t size) {
+    size_t len = strlen(src);
+    size_t n = len < size - 1 ? len : size - 1;
+
+    memcpy(dst, src, n);
+    dst[n] = '\0';
+    return len;
+}
+
 int strcmp(const char *s1, const char *s2) {
     while (*s1 && (*s1 == *s2)) {
         s1++;

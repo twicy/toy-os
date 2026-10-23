@@ -10,6 +10,7 @@
 #include <mm/page_alloc.h>
 #include <mm/slab.h>
 #include <mm/vmalloc.h>
+#include <task.h>
 
 static void on_breakpoint(struct intr_frame *f) {
     printk("int3 at eip %#x\n", f->eip);
@@ -28,6 +29,7 @@ int main(void) {
     init_page_alloc();
     init_kmalloc();
     init_vmalloc();
+    init_tasks();
 
     init_idt();
     init_pic();

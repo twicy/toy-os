@@ -42,7 +42,8 @@ void init_vmalloc(void) {
 static struct vm_area *alloc_vm_area(uint32_t size) {
     struct vm_area *area = kmalloc(sizeof(*area));
     struct list_head *pos;
-    uint32_t addr = VMALLOC_START;
+
+    uint32_t addr = VMALLOC_START + PAGE_SIZE;
 
     if (!area)
         return NULL;

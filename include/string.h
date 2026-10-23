@@ -13,6 +13,8 @@ int memcmp(const void *s1, const void *s2, size_t n);
 
 char *strcpy(char *dst, const char *src);
 size_t strlen(const char *s);
+/* copies at most size - 1 bytes and always terminates (size > 0), returns strlen(src) */
+size_t strlcpy(char *dst, const char *src, size_t size);
 int strcmp(const char *s1, const char *s2);
 char *strchr(const char *s, int c);
 char *strcat(char *dst, const char *src);
