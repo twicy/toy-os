@@ -15,9 +15,10 @@ all: mbr.bin loader.bin kernel.bin
 %.bin: boot/%.S boot/boot.inc boot/util.inc
 	nasm -f bin -i boot/ -o $@ $<
 
+# -mgeneral-regs-only: switch_to saves no FPU/SSE state, so the kernel must never use those registers
 CFLAGS := -m32 -ffreestanding -nostdinc -Iinclude \
           -fno-pie -fno-stack-protector -fno-asynchronous-unwind-tables \
-          -Wall -Wextra -MMD -MP
+          -mgeneral-regs-only -Wall -Wextra -MMD -MP
 
 $(BUILD)/%.o: %.c
 	@mkdir -p $(dir $@)
