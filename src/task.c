@@ -15,6 +15,9 @@ struct task_struct init_task = {
 
 struct task_struct *current = &init_task;
 
+/* TASK_READY threads, next to run first. init_task is never on it */
+static struct list_head run_queue;
+
 static struct kmem_cache *task_cache;
 static uint32_t next_pid = 1;
 
@@ -23,6 +26,7 @@ void init_tasks(void) {
     if (!task_cache)
         PANIC("no memory for the task_struct cache");
     INIT_LIST_HEAD(&init_task.run_list);
+    INIT_LIST_HEAD(&run_queue);
 }
 
 struct task_struct *alloc_task(const char *name) {
@@ -73,6 +77,7 @@ static void kthread_entry(void (*fn)(void *), void *arg) {
 struct task_struct *kthread_create(void (*fn)(void *), void *arg, const char *name) {
     struct task_struct *task = alloc_task(name);
     struct kthread_frame *frame;
+    uint32_t flags;
 
     if (!task)
         return NULL;
@@ -85,10 +90,15 @@ struct task_struct *kthread_create(void (*fn)(void *), void *arg, const char *na
     };
     task->esp = (uint32_t)frame;
     task->state = TASK_READY;
+
+    flags = irq_save();
+    list_add_tail(&task->run_list, &run_queue);
+    irq_restore(flags);
     return task;
 }
 
-void context_switch(struct task_struct *next) {
+/* only schedule() picks next, so every thread switched to came off the run queue */
+static void context_switch(struct task_struct *next) {
     struct task_struct *prev = current;
     uint32_t flags;
 
@@ -109,4 +119,38 @@ void context_switch(struct task_struct *next) {
     switch_to(prev, next);
 
     irq_restore(flags);
+}
+
+/* Round robin. A caller still TASK_RUNNING only gives up the CPU and goes to
+ * the back of the queue, one that set itself TASK_BLOCKED first stays off it.
+ * With nothing ready, init_task runs */
+void schedule(void) {
+    struct task_struct *next = &init_task;
+    uint32_t flags = irq_save();
+
+    if (current->state == TASK_RUNNING && current != &init_task)
+        list_add_tail(&current->run_list, &run_queue);
+    if (!list_empty(&run_queue)) {
+        next = list_first_entry(&run_queue, struct task_struct, run_list);
+        list_del_init(&next->run_list);
+    }
+    context_switch(next);
+
+    irq_restore(flags);
+}
+
+/* What main() turns into once it is done setting up */
+void cpu_idle(void) {
+    ASSERT(current == &init_task);
+
+    for (;;) {
+        /* IRQs off from the check to the hlt, or an IRQ waking a thread in
+         * between would be slept through until the next IRQ */
+        irq_disable();
+        if (list_empty(&run_queue))
+            safe_halt();
+        else
+            irq_enable();
+        schedule();
+    }
 }

@@ -44,6 +44,7 @@ void free_task(struct task_struct *task);
 struct task_struct *switch_to(struct task_struct *prev, struct task_struct *next);
 
 struct task_struct *kthread_create(void (*fn)(void *), void *arg, const char *name);
-void context_switch(struct task_struct *next);
+void schedule(void);
+void cpu_idle(void) __attribute__((noreturn));
 
 #endif

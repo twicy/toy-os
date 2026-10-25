@@ -19,4 +19,14 @@ static inline void irq_enable(void) {
     asm volatile ("sti" : : : "memory");
 }
 
+static inline void irq_disable(void) {
+    asm volatile ("cli" : : : "memory");
+}
+
+/* sti only takes effect after the next instruction, so no IRQ can land
+ * between the two: one already pending wakes the hlt instead */
+static inline void safe_halt(void) {
+    asm volatile ("sti\n\thlt" : : : "memory");
+}
+
 #endif

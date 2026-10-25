@@ -17,6 +17,19 @@ static void on_breakpoint(struct intr_frame *f) {
     printk("int3 at eip %#x\n", f->eip);
 }
 
+static void demo_thread(void *arg) {
+    (void)arg;
+
+    for (int i = 0; i < 3; i++) {
+        printk("%s: round %d\n", current->name, i);
+        schedule();
+    }
+    printk("%s: parked\n", current->name);
+    /* no wake up and no exit yet: off the run queue for good */
+    current->state = TASK_BLOCKED;
+    schedule();
+}
+
 int main(void) {
     init_gdt();
     clear_screen();
@@ -42,10 +55,10 @@ int main(void) {
     init_timer();
     /* IF has been 0 since the loader's cli, IRQs only arrive from here on */
     asm volatile ("sti");
-    ASSERT(1 == 2);
-    for (;;) {
-        /* sleep until the next interrupt instead of spinning */
-        asm volatile ("hlt");
-    }
-    return 0;
+
+    kthread_create(demo_thread, NULL, "A");
+    kthread_create(demo_thread, NULL, "B");
+    kthread_create(demo_thread, NULL, "C");
+    /* done setting up: main() is the idle thread from here on */
+    cpu_idle();
 }
